@@ -1,35 +1,53 @@
 # k8shelloworld
 
-docker build -f Dockerfile.scratch . -t javiroman/helloworld:v1
-docker build -f Dockerfile.alpine . -t javiroman/helloworld:v2
+## Podman
 
-Simple Go hello world for testing kubernetes
+```
+podman build -f Dockerfile.alpine . -t javiroman/helloworld:v3
+podman run -d -p 8080:8080 --name hello --env FILE="/etc/motd" javiroman/helloworld:v3
+curl localhost:8080
+podman stop hello
+podman rm hello
+podman run -ti --entrypoint="/bin/bash" -p 8080:8080 --name hello javiroman/helloworld:v3
+podman login -u javiroman
+podman push javiroman/zookeeper:v3
+```
 
-$ docker run  -d -p 8080:8080 --name hello javiroman/helloworld:v1
-$ curl localhost:8080
-CPUs: 4
-Hostname: 1982d2363b4c
+## Kubernetes
 
-$ docker run  -d -p 8080:8080 --cpuset-cpus=0 --name javiroman/helloworld:v1
-$ curl localhost:8080
-CPUs: 1
-Hostname: 8240043c0558
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: helloworld
+  labels:
+    app: helloworld-app
+spec:
+  containers:
+  - name: helloworld
+    image: javiroman/helloworld:v3
+    env:
+    - name: FILE
+      value: "/etc/hosts"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: helloworld-service
+spec:
+  type: NodePort
+  ports:
+    - targetPort: 8080
+      port: 8080
+      nodePort: 30000
+  selector:
+    app: helloworld-app
+```
 
-$ docker run  -d -p 8080:8080 --name hello javiroman/helloworld:v2
-$ docker exec -ti hello sh
-
-/ # dig @8.8.8.8 www.redhat.com +short
-23.214.212.161
-
-/ # netstat -putona
-Active Internet connections (servers and established)
-Proto Recv-Q Send-Q Local Address           Foreign Address         State
-PID/Program name     Timer
-tcp6       0      0 :::8080                 :::*                    LISTEN 1/helloworld         off (0.00/0/0)
-
-
-
-
-
+```
+k apply -f helloworld.yaml
+k get pod -o wide
+curl k8s-worker03.kubernetes.lan:30000
+```
 
 

@@ -21,6 +21,11 @@ RUN apk add --no-cache --update \
 		bind \
 		busybox-extras
 
-ADD helloworld helloworld
+ADD helloworld /app/bin/
+ADD start.sh /app/bin/
+ADD stop.sh /app/bin/
+ADD restart.sh /app/bin/
 
-ENTRYPOINT ["/helloworld"]
+WORKDIR /app
+
+ENTRYPOINT ["bin/start.sh"]
