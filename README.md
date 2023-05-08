@@ -50,4 +50,3 @@ k get pod -o wide
 curl k8s-worker03.kubernetes.lan:30000
 ```
 
-
